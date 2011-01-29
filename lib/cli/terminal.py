@@ -23,3 +23,6 @@ class Terminal(object):
 
     def set_echo(self, echo):
         raise NotImplementedError
+
+    def readline(self, prompt):
+        raise NotImplementedError
