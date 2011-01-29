@@ -11,6 +11,7 @@ import fcntl
 import termios
 import struct
 import curses
+import readline
 
 from cli.terminal import Terminal
 
@@ -51,3 +52,8 @@ class PosixTerminal(Terminal):
 
     def close(self):
         os.close(self._tty)
+
+    def readline(self, prompt):
+        line = raw_input(prompt)
+        line += '\n'
+        return line
