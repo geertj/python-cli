@@ -20,15 +20,14 @@ class Parser(PLYParser):
     multi-line inputs.
     """
 
-    tokens = ('WORD', 'STRING', 'QUOTED_STRING', 'OPTION', 'LT', 'LTLT', 'GT',
-              'GTGT', 'BANG', 'PIPE', 'NEWLINE', 'MARKER', 'HEREDOC', 'SHELL')
+    tokens = ('WORD', 'STRING', 'OPTION', 'LT', 'LTLT', 'GT', 'GTGT',
+              'BANG', 'PIPE', 'NEWLINE', 'MARKER', 'HEREDOC', 'SHELL')
     literals = ('=', '\n')
     states = [('heredoc1', 'inclusive'), ('heredoc2', 'exclusive'),
               ('shell', 'exclusive')]
 
+    t_WORD =  r'[^ \n\t"\'<>|!\\#]+'
     t_OPTION = r'-(-[a-zA-Z_][a-zA-Z0-9_]*)+'
-    t_WORD =  r'[a-zA-Z_][a-zA-Z0-9_]*'
-    t_STRING =  r'[^ \n\t"\'<>|!\\#]+'
     t_LT = r'<'
     t_GT = r'>'
     t_GTGT = r'>>'
@@ -39,7 +38,7 @@ class Parser(PLYParser):
     t_heredoc2_ignore = ' \t'
     t_shell_ignore = ' \t'
 
-    def t_QUOTED_STRING(self, t):
+    def t_STRING(self, t):
         r'''(?s)("([^"\\]|\\.)*"|'[^']')'''
         t.value = t.value[1:-1].replace(r'\\', '\\').replace('\\\n', '')
         return t
@@ -144,7 +143,6 @@ class Parser(PLYParser):
     def p_argument(self, p):
         """argument : WORD
                     | STRING
-                    | QUOTED_STRING
         """
         p[0] = p[1]
 
@@ -174,7 +172,6 @@ class Parser(PLYParser):
     def p_option_value(self, p):
         """option_value : WORD
                         | STRING
-                        | QUOTED_STRING
                         | empty
         """
         p[0] = p[1]
@@ -216,7 +213,6 @@ class Parser(PLYParser):
     def p_file(self, p):
         """file : WORD
                 | STRING
-                | QUOTED_STRING
         """
         p[0] = p[1]
 
