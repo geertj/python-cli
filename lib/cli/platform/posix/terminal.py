@@ -9,6 +9,7 @@
 import os
 import fcntl
 import termios
+import struct
 import curses
 
 from cli.terminal import Terminal
