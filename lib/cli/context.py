@@ -66,12 +66,12 @@ class ExecutionContext(object):
         """INTERNAL: return True if this is an interactive context."""
         return self.terminal.stdin.isatty() and self.terminal.stdout.isatty()
 
-    def command_loop(self, finput):
+    def command_loop(self, finput=None):
         """Run a read/parse/execute loop until EOF."""
         if isinstance(finput, str):
             finput = file(finput, 'r')
-        elif not hasattr(finput, 'read'):
-            raise TypeError, 'finput: expecing file name or file object'
+        elif finput is not None and not hasattr(finput, 'read'):
+            raise TypeError, 'finput: expecing file name, file object or None'
         stdout = self.terminal.stdout
         stderr = self.terminal.stderr
         interactive = self._interactive()
@@ -80,7 +80,7 @@ class ExecutionContext(object):
         self._stop = False
         while not self._stop:
             try:
-                parsed = self._parse_command(finput)
+                parsed = self._read_and_parse_command(finput)
             except EOFError:
                 # CTRL-D pressed
                 stdout.write('\n')
@@ -148,7 +148,7 @@ class ExecutionContext(object):
         """Exit the loop in command_loop()."""
         self._stop = True
 
-    def _parse_command(self, finput):
+    def _read_and_parse_command(self, finput):
         """INTERNAL: parse one command from `finput' and return its parsed
         representation."""
         prompt = self.settings['ps1']
@@ -156,10 +156,13 @@ class ExecutionContext(object):
         interactive = self._interactive()
         command = ''
         while True:
-            if interactive:
-                terminal.stdout.write(prompt)
-                terminal.stdout.flush()
-            line = finput.readline()
+            if finput is None:
+                if interactive:
+                    line = terminal.readline(prompt)
+                else:
+                    line = sys.stdin.readline()
+            else:
+                line = finput.readline()
             if not line:
                 raise EOFError
             command += line
