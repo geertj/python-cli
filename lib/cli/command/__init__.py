@@ -13,5 +13,4 @@ from cli.command.exit import ExitCommand
 from cli.command.help import HelpCommand
 from cli.command.pwd import PwdCommand
 from cli.command.set import SetCommand
-from cli.command.show import ShowCommand
 from cli.command.status import StatusCommand

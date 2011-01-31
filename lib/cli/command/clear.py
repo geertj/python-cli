@@ -16,6 +16,15 @@ class ClearCommand(Command):
     name = 'clear'
     aliases = ('cls',)
     description = 'clear the screen'
+    helptext = """\
+        == Usage ==
+        
+        clear
+        
+        == Description ==
+        
+        Clear the screen.
+        """
 
-    def run(self):
+    def execute(self):
         self.context.terminal.clear()

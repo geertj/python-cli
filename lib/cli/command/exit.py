@@ -13,6 +13,15 @@ class ExitCommand(Command):
 
     name = 'exit'
     description = 'quit this interactive terminal'
+    helptext = """\
+        == Usage ==
+        
+        exit
+        
+        == Description ==
+        
+        Quit the interative terminal.
+        """
 
-    def run(self):
-        self.context.exit_loop()
+    def execute(self):
+        self.context._eof = True
