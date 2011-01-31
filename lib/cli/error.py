@@ -10,6 +10,13 @@
 class Error(Exception):
     """Base class for python-cli errors."""
 
+    def __init__(self, message=None, **kwargs):
+        if message is None:
+            message = self.__doc___
+        super(Error, self).__init__(message)
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
+
 
 class ParseError(Error):
     """Error parsing command line."""
@@ -17,10 +24,3 @@ class ParseError(Error):
 
 class CommandError(Error):
     """Illegal command."""
-
-    def __init__(self, message=None, **kwargs):
-        if message is None:
-            message = self.__doc___
-        super(CommandError, self).__init__(message)
-        self.status = kwargs.get('status', 2)
-        self.command = kwargs.get('command')

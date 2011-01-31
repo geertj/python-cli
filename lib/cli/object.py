@@ -14,6 +14,7 @@ def create(cls, *args, **kwargs):
     right subclass, and configuring it in the right way."""
     from cli.settings import Settings
     from cli.terminal import Terminal
+    from optparse import OptionParser
     if issubclass(cls, Settings):
         obj = cls(ignore_unknown=True)
         obj.load_config_file()
@@ -21,6 +22,9 @@ def create(cls, *args, **kwargs):
         obj.ignore_unknown = False
     elif issubclass(cls, Terminal):
         obj = cls(sys.stdin, sys.stdout, sys.stderr, **kwargs)
+    elif issubclass(cls, OptionParser):
+        obj = cls(*args, **kwargs)
+        obj.disable_interspersed_args()
     else:
         obj = cls(*args, **kwargs)
     return obj

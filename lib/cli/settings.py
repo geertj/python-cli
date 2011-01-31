@@ -23,7 +23,7 @@ class enum(object):
 
     def __call__(self, value):
         if value not in self.values:
-            raise ValueError
+            raise ValueError, 'illegal value: %s' % value
         return value
 
 
@@ -35,8 +35,21 @@ class regex(object):
 
     def __call__(self, value):
         if not self.regex.match(value):
-            raise ValueError
+            raise ValueError, 'illegal value: %s' % value
         return value
+
+
+def boolean(value):
+    """A boolean setting."""
+    if isinstance(value, int) or isinstance(value, bool):
+        return bool(value)
+    elif isinstance(value, str):
+        s = value.lower()
+        if s in ('true', 'on', '1'):
+            return True
+        elif s in ('false', 'off', '0'):
+            return False
+    raise ValueError, 'illegal value: %s' % value
 
 
 class Settings(dict):
@@ -52,26 +65,34 @@ class Settings(dict):
         'ps2': '> '
     }
     example = textwrap.dedent("""
-        [cli]
+        [main]
         #ps1 = %(ps1)s
         #ps2 = %(ps2)s
         """) % defaults
 
     def __init__(self, ignore_unknown=False, **kwargs):
+        """Constructor."""
+        self.callbacks = []
         self.ignore_unknown = ignore_unknown
         self.update(self.defaults)
         if kwargs:
             self.update(kwargs)
 
     def __setitem__(self, key, value):
+        """Validate a variable. Also calls callbacks."""
+        found = False
         for pattern,validator in self.validators:
             if not fnmatch(key, pattern):
                 continue
             value = validator(value)
-            super(Settings, self).__setitem__(key, value)
-            return
-        if not self.ignore_unknown:
+            found = True
+        if not found and not self.ignore_unknown:
             raise KeyError, 'unknown setting: %s' % key
+        for pattern,callback in self.callbacks:
+            if not fnmatch(key, pattern):
+                continue
+            callback(key, value)
+        super(Settings, self).__setitem__(key, value)
 
     def load_config_file(self):
         """Load default values from a configuration file."""
@@ -89,7 +110,7 @@ class Settings(dict):
         """Write an example config file."""
         if not self.example:
             return
-        fname = platform.local_settings_file('rhev')
+        fname = platform.local_settings_file(self.name)
         if fname is None:
             return
         if os.access(fname, os.R_OK):
@@ -100,3 +121,8 @@ class Settings(dict):
             fout.close()
         except IOError:
             pass
+
+    def add_callback(self, callback, pattern):
+        """Register a callback function. The callback is called when the
+        variable identified by `pattern' changes."""
+        self.callbacks.append((pattern, callback))

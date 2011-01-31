@@ -18,34 +18,32 @@ from cli.context import ExecutionContext
 class TestExecutionContext(ExecutionContext):
 
     welcome = textwrap.dedent("""\
-        Welcome to cli-test. This is a test driver for the python-cli CLI
-        construction toolkit. Type 'exit' to exit or 'help' for help.
+        Welcome to cli-test. This is a test driver for the python-cli.
+        Type 'exit' to exit or 'help' for help.
         """)
+    goodbye = 'Goodbye!'
 
 
 def main():
     """Test driver for python-cli."""
-    parser = OptionParser()
+    parser = create(OptionParser)
     parser.add_option('-f', '--filter', metavar='FILE',
                       help='execute commands from FILE')
-    parser.disable_interspersed_args()
     opts, args = parser.parse_args()
+
+    if opts.filter:
+        try:
+            sys.stdin = file(opts.filter)
+        except IOError, e:
+            sys.stderr.write('error: %s\n' % e.strerror)
+            sys.exit(1)
+
+    context = create(TestExecutionContext)
+
     if len(args) == 0:
-        command = None
+        context.execute_loop()
     else:
-        command = ' '.join(args)
-
-    settings = create(Settings)
-    context = create(TestExecutionContext, settings)
-
-    if command is not None:
-        context.execute_command(command)
-    elif opts.filter:
-        context.command_loop(opts.filter)
-    else:
-        context.command_loop(sys.stdin)
+        command = ' '.join(args) + '\n'
+        context.execute_string(command)
 
     sys.exit(context.status)
-
-if __name__ == '__main__':
-    main()

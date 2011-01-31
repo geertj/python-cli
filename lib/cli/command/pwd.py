@@ -14,7 +14,16 @@ class PwdCommand(Command):
 
     name = 'pwd'
     description = 'print working directory'
+    helptext = """\
+        == Usage ==
 
-    def run(self):
+        pwd
+
+        == Description ==
+        
+        Print the current working directory.
+        """
+
+    def execute(self):
         stdout = self.context.terminal.stdout
         stdout.write('%s\n' % os.getcwd())

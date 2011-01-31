@@ -22,11 +22,11 @@ class Parser(PLYParser):
 
     tokens = ('WORD', 'STRING', 'OPTION', 'LT', 'LTLT', 'GT', 'GTGT',
               'BANG', 'PIPE', 'NEWLINE', 'MARKER', 'HEREDOC', 'SHELL')
-    literals = ('=', '\n')
+    literals = ('=', ';')
     states = [('heredoc1', 'inclusive'), ('heredoc2', 'exclusive'),
               ('shell', 'exclusive')]
 
-    t_WORD =  r'[^ \n\t"\'<>|!\\#]+'
+    t_WORD =  r'[^ \n\t"\'<>|!\\#;]+'
     t_OPTION = r'-(-[a-zA-Z_][a-zA-Z0-9_]*)+'
     t_LT = r'<'
     t_GT = r'>'
@@ -107,9 +107,9 @@ class Parser(PLYParser):
             p[0] = p[1] + [p[2]]
 
     def p_command(self, p):
-        """command : name argument_list option_list redirections pipeline heredoc NEWLINE
-                   | BANG SHELL NEWLINE
-                   | NEWLINE
+        """command : name argument_list option_list redirections pipeline heredoc eol
+                   | BANG SHELL eol
+                   | eol
         """
         if len(p) == 8:
             if p[6]:
@@ -215,6 +215,13 @@ class Parser(PLYParser):
                 | STRING
         """
         p[0] = p[1]
+
+    def p_eol(self, p):
+        """eol : ';' NEWLINE
+               | NEWLINE
+               | ';'
+        """
+        p[0] = None
 
     def p_empty(self, p):
         """empty : """

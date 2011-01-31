@@ -13,8 +13,17 @@ class StatusCommand(Command):
 
     name = 'status'
     description = 'show status'
+    helptext = """\
+        == Usage ==
 
-    def run(self):
+        status
+
+        == Description ==
+
+        Show the exit status of the last command.
+        """
+
+    def execute(self):
         context = self.context
         stdout = context.terminal.stdout
         status = context.status
@@ -22,7 +31,7 @@ class StatusCommand(Command):
             sstatus = str(status)
             for sym in dir(context):
                 if sym[0].isupper() and getattr(context, sym) == status:
-                    sstatus += ' (%s)' % sym[7:]
+                    sstatus += ' (%s)' % sym
         else:
             sstatus = 'N/A'
         stdout.write('last command status: %s\n' % sstatus)

@@ -7,6 +7,7 @@
 # file "AUTHORS" for a complete overview.
 
 import os
+
 from cli.error import CommandError
 from cli.command.command import Command
 
@@ -15,14 +16,21 @@ class CdCommand(Command):
 
     name = 'cd'
     alias = ('chdir',)
-    usage = 'cd <directory>'
     description = 'change directory'
-    nargs = 1
+    args_check = 1
+    helptext = """\
+        == Usage ==
 
-    def run(self):
-        dirname = self.args[0]
+        cd <directory>
+
+        == Description ==
+
+        Change the current directory to <directory>.
+        """
+
+    def execute(self):
+        dirname = self.arguments[0]
         try:
             os.chdir(dirname)
         except OSError, e:
-            m = '%s: %s' % (dirname, e.strerror)
-            raise CommandError, m
+            self.error('%s: %s' % (dirname, e.strerror))

@@ -9,8 +9,9 @@
 import os
 import sys
 
-from distutils.command.build import build
 from setuptools import setup, Command
+from distutils.command.build import build
+from setuptools.command.bdist_egg import bdist_egg
 
 
 class gentab(Command):
@@ -39,18 +40,26 @@ class mybuild(build):
         build.run(self)
         
 
+class mybdist_egg(bdist_egg):
+    """Generate parse tables while building a binary egg."""
+
+    def run(self):
+        self.run_command('gentab')
+        bdist_egg.run(self)
+
+
 version_info = {
     'name': 'python-cli',
-    'version': '0.9',
+    'version': '1.0',
     'description': 'A toolkit for CLI construction',
     'author': 'Geert Jansen',
     'author_email': 'gjansen@redhat.com',
     'url': 'http://bitbucket.org/geertj/python-cli',
     'license': 'MIT',
     'classifiers': [
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
-        'Intended Audience :: System Administrators',
+        'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python' ],
@@ -62,7 +71,6 @@ setup(
     packages = [ 'cli', 'cli.command', 'cli.platform', 'cli.platform.posix' ],
     install_requires = [ 'ply >= 3.3' ],
     entry_points = { 'console_scripts': [ 'cli-test = cli.main:main' ] },
-    test_suite = 'nose.collector',
-    cmdclass = { 'build': mybuild, 'gentab': gentab },
+    cmdclass = { 'build': mybuild, 'bdist_egg': mybdist_egg, 'gentab': gentab },
     **version_info
 )
