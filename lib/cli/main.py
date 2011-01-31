@@ -29,6 +29,8 @@ def main():
     parser = create(OptionParser)
     parser.add_option('-f', '--filter', metavar='FILE',
                       help='execute commands from FILE')
+    parser.add_option('-d', '--debug', action='store_true',
+                      help='enable debugging mode')
     opts, args = parser.parse_args()
 
     if opts.filter:

@@ -7,6 +7,7 @@
 # file "AUTHORS" for a complete overview.
 
 import sys
+import traceback
 
 from StringIO import StringIO
 from subprocess import Popen, PIPE
@@ -155,7 +156,10 @@ class ExecutionContext(object):
                 sys.stderr.write('%s\n' % e.help)
         else:
             self.status = self.UNKNOWN_ERROR
-            sys.stderr.write('unknown error: %s\n' % str(e))
+            if self.settings['debug']:
+                sys.stderr.write(traceback.format_exc())
+            else:
+                sys.stderr.write('unknown error: %s\n' % str(e))
 
     def _execute_command(self, parsed):
         """INTERNAL: execute a command."""

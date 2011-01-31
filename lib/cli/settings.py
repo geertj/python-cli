@@ -58,16 +58,19 @@ class Settings(dict):
     name = 'cli'
     validators = [
         ('ps1', str),
-        ('ps2', str)
+        ('ps2', str),
+        ('debug', boolean)
     ]
     defaults = {
         'ps1': '$ ',
-        'ps2': '> '
+        'ps2': '> ',
+        'debug': False
     }
     example = textwrap.dedent("""
         [main]
         #ps1 = %(ps1)s
         #ps2 = %(ps2)s
+        #debug = %(debug)s
         """) % defaults
 
     def __init__(self, ignore_unknown=False, **kwargs):
