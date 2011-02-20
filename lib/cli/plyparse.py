@@ -17,27 +17,25 @@ from ply import lex, yacc
 class PLYParser(object):
     """Wrapper object for PLY lexer/parser."""
 
-    @classmethod
-    def _table_name(cls, suffix, relative=False):
+    def _table_name(self, suffix, relative=False):
         """Return the module name for PLY's parsetab file."""
-        mname = inspect.getmodule(cls).__name__ + '_' + suffix
+        mname = inspect.getmodule(self.__class__).__name__ + '_' + suffix
         if relative:
             mname = mname.split('.')[-1]
         return mname
 
-    @classmethod
-    def _write_tables(cls):
+    def _write_tables(self):
         """Write parser table (for distribution purposes)."""
-        path = inspect.getfile(cls)
+        path = inspect.getfile(self.__class__)
         parent = os.path.split(path)[0]
         # Need to change directories to get the file written at the right
         # location.
         cwd = os.getcwd()
         os.chdir(parent)
-        tabname = cls._table_name('lex', relative=True)
-        lex.lex(object=cls, lextab=tabname, optimize=True, debug=False)
-        tabname = cls._table_name('tab', relative=True)
-        yacc.yacc(module=cls, tabmodule=tabname, optimize=True, debug=False)
+        tabname = self._table_name('lex', relative=True)
+        lex.lex(object=self, lextab=tabname, optimize=True, debug=False)
+        tabname = self._table_name('tab', relative=True)
+        yacc.yacc(module=self, tabmodule=tabname, optimize=True, debug=False)
         os.chdir(cwd)
 
     def parse(self, input, fname=None, debug=False):

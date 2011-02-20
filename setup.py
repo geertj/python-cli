@@ -27,25 +27,26 @@ class gentab(Command):
         pass
 
     def run(self):
-        sys.path.insert(0, 'lib')
+        sys.path.insert(0, 'build/lib')
         from cli.parser import Parser
-        Parser._write_tables()
+        parser = Parser()
+        parser._write_tables()
 
 
 class mybuild(build):
     """Generate parse tables while building."""
 
     def run(self):
-        self.run_command('gentab')
         build.run(self)
+        self.run_command('gentab')
         
 
 class mybdist_egg(bdist_egg):
     """Generate parse tables while building a binary egg."""
 
     def run(self):
-        self.run_command('gentab')
         bdist_egg.run(self)
+        self.run_command('gentab')
 
 
 version_info = {
@@ -62,15 +63,17 @@ version_info = {
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python' ],
+        'Programming Language :: Python :: 2.4',
+        'Programming Language :: Python :: 3' ],
 }
 
 
 setup(
     package_dir = { '': 'lib' },
     packages = [ 'cli', 'cli.command', 'cli.platform', 'cli.platform.posix' ],
-    install_requires = [ 'ply >= 3.3' ],
+    install_requires = [ 'distribute', 'ply >= 3.3' ],
     entry_points = { 'console_scripts': [ 'cli-test = cli.main:main' ] },
     cmdclass = { 'build': mybuild, 'bdist_egg': mybdist_egg, 'gentab': gentab },
+    use_2to3 = True,
     **version_info
 )

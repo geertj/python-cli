@@ -5,6 +5,5 @@ dist/
 *.egg-info
 .*.swp
 .*.swo
-parser_*.py
 header
 *~
