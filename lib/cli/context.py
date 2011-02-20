@@ -105,7 +105,7 @@ class ExecutionContext(object):
                 continue
             except ParseError, e:
                 self.status = self.SYNTAX_ERROR
-                sys.stderr.wrte('error: %s\n' % str(e))
+                sys.stderr.write('error: %s\n' % str(e))
                 return
             else:
                 break
