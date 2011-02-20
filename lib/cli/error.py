@@ -14,7 +14,7 @@ class Error(Exception):
 
     def __init__(self, message=None, **kwargs):
         if message is None:
-            message = self.__doc___
+            message = self.__doc__
         compat.super(Error, self).__init__(message)
         for key in kwargs:
             setattr(self, key, kwargs[key])
