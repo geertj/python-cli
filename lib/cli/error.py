@@ -6,6 +6,8 @@
 # python-cli is copyright (c) 2011 by the python-cli authors. See the
 # file "AUTHORS" for a complete overview.
 
+from cli import compat
+
 
 class Error(Exception):
     """Base class for python-cli errors."""
@@ -13,7 +15,7 @@ class Error(Exception):
     def __init__(self, message=None, **kwargs):
         if message is None:
             message = self.__doc___
-        super(Error, self).__init__(message)
+        compat.super(Error, self).__init__(message)
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
