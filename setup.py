@@ -37,6 +37,7 @@ class gentab(Command):
         from cli.parser import Parser
         parser = Parser()
         parser._write_tables()
+        sys.stdout.write('generated parse tables in: %s\n' % libdir)
 
 
 class mybuild(build):
