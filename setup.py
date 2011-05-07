@@ -7,11 +7,16 @@
 # file "AUTHORS" for a complete overview.
 
 import os
+import os.path
 import sys
 
 from setuptools import setup, Command
 from distutils.command.build import build
 from setuptools.command.bdist_egg import bdist_egg
+
+topdir = os.path.split(os.path.abspath(__file__))[0]
+if topdir == os.getcwd():
+    topdir = ''
 
 
 class gentab(Command):
@@ -27,7 +32,8 @@ class gentab(Command):
         pass
 
     def run(self):
-        sys.path.insert(0, 'build/lib')
+        libdir = os.path.join(topdir, 'build', 'lib')
+        sys.path.insert(0, libdir)
         from cli.parser import Parser
         parser = Parser()
         parser._write_tables()
