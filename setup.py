@@ -39,7 +39,7 @@ class mybuild(build):
     def run(self):
         build.run(self)
         self.run_command('gentab')
-        
+
 
 class mybdist_egg(bdist_egg):
     """Generate parse tables while building a binary egg."""
