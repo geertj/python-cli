@@ -10,9 +10,20 @@ import os
 import os.path
 
 
+def get_home_dir():
+    """Return the user's home directory."""
+    home = os.environ.get('HOME')
+    if home is not None:
+        return home
+    try:
+        pw = pwd.getpwuid(os.getuid())
+    except Keyerror:
+        return None
+    return pw.pw_dir
+
 def local_settings_file(name):
     """"Return the local settings file for `name'."""
-    home = os.environ.get('HOME')
+    home = get_home_dir()
     if home is None:
         return
     name = name.replace('-', '').replace('_', '')
