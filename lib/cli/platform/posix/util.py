@@ -15,5 +15,6 @@ def local_settings_file(name):
     home = os.environ.get('HOME')
     if home is None:
         return
+    name = name.replace('-', '').replace('_', '')
     fname = os.path.join(home, '.%src' % name)
     return fname

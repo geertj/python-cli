@@ -38,7 +38,7 @@ class SetCommand(Command):
             names.sort()
             stdout.write('Current settings:\n\n')
             for name in names:
-                stdout.write('  %s = "%s"\n' % (name, settings[name]))
+                stdout.write('  %s = %s\n' % (name, repr(settings[name])))
             stdout.write('\n')
         elif len(args) == 2:
             key, value = args

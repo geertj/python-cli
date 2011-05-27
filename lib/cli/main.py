@@ -17,6 +17,7 @@ from cli.context import ExecutionContext
 
 class TestExecutionContext(ExecutionContext):
 
+    name = 'cli-test'
     welcome = textwrap.dedent("""\
         Welcome to cli-test. This is a test driver for the python-cli.
         Type 'exit' to exit or 'help' for help.
@@ -30,7 +31,10 @@ def main():
     parser.add_option('-f', '--filter', metavar='FILE',
                       help='execute commands from FILE')
     parser.add_option('-d', '--debug', action='store_true',
-                      help='enable debugging mode')
+                      default=False, help='enable debugging mode')
+    parser.add_option('-v', '--verbose', action='store_const',
+                      dest='verbosity', default=0, const=10,
+                      help='be verbose',)
     opts, args = parser.parse_args()
 
     if opts.filter:
@@ -41,6 +45,8 @@ def main():
             sys.exit(1)
 
     context = create(TestExecutionContext)
+    context.settings['cli:debug'] = opts.debug
+    context.settings['cli:verbosity'] = opts.verbosity
 
     if len(args) == 0:
         context.execute_loop()

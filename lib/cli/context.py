@@ -7,6 +7,7 @@
 # file "AUTHORS" for a complete overview.
 
 import sys
+import logging
 import traceback
 
 from StringIO import StringIO
@@ -22,6 +23,8 @@ from cli.command import *
 
 class ExecutionContext(object):
     """A CLI execution context."""
+
+    name = None
 
     OK = 0
     SYNTAX_ERROR = 1
@@ -40,15 +43,43 @@ class ExecutionContext(object):
         """Constructor."""
         self.commands = []
         self.status = None
-        self.settings = create(self.Settings)
+        self.settings = create(self.Settings, self.name)
         self.parser = create(self.Parser)
         self.terminal = create(self.Terminal)
+        self._setup_logging()
+        self._load_settings()
         self.setup_commands()
+
+    def _setup_logging(self):
+        """Configure logging."""
+        logger = logging.getLogger()
+        handler = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter('%(levelname)s: %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
+        self._logger = logger
+
+    def _load_settings(self):
+        """Load settings."""
+        self.settings.add_callback('cli:debug', self._set_debug)
+        found = self.settings.load_config_file()
+        if not found:
+            self.settings.write_example_config_file()
+
+    def _set_debug(self, key, value):
+        """Enable or disable debugging (callback)."""
+        if value:
+            level = logging.DEBUG
+        else:
+            level = logging.INFO
+        self._logger.setLevel(level)
 
     def setup_commands(self):
         """Register the default commands. Override in a subclass to change the
         default list."""
         self.add_command(SetCommand)
+        self.add_command(SaveCommand)
         self.add_command(HelpCommand)
         self.add_command(StatusCommand)
         self.add_command(CdCommand)
@@ -78,7 +109,7 @@ class ExecutionContext(object):
         """Parse input until we can parse at least one full command, and
         return that input."""
         command = ''
-        prompt = self.settings['ps1']
+        prompt = self.settings['cli:ps1']
         interactive = sys.stdin.isatty() and sys.stdout.isatty()
         while True:
             try:
@@ -101,7 +132,7 @@ class ExecutionContext(object):
             try:
                 parsed = self.parser.parse(command)
             except EOFError:
-                prompt = self.settings['ps2']
+                prompt = self.settings['cli:ps2']
                 continue
             except ParseError, e:
                 self.status = self.SYNTAX_ERROR
@@ -156,7 +187,7 @@ class ExecutionContext(object):
                 sys.stderr.write('%s\n' % e.help)
         else:
             self.status = self.UNKNOWN_ERROR
-            if self.settings['debug']:
+            if self.settings['cli:debug']:
                 sys.stderr.write(traceback.format_exc())
             else:
                 sys.stderr.write('unknown error: %s\n' % str(e))
