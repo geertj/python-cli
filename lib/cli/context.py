@@ -38,10 +38,13 @@ class ExecutionContext(object):
     welcome = None
     goodbye = None
 
-    def __init__(self):
+    def __init__(self, cmdin=None):
         """Constructor."""
+        self.cmdin = cmdin or sys.stdin
         self.commands = []
         self.status = None
+        self.interactive = sys.stdin.isatty() and sys.stdout.isatty() \
+                    and self.cmdin is sys.stdin
         self.settings = create(self.Settings, self.name)
         self.parser = create(self.Parser)
         self.terminal = create(self.Terminal)
@@ -89,8 +92,7 @@ class ExecutionContext(object):
 
     def execute_loop(self):
         """Run a read/parse/execute loop until EOF."""
-        interactive = sys.stdin.isatty() and sys.stdout.isatty()
-        if interactive and self.welcome:
+        if self.interactive and self.welcome:
             sys.stdout.write('%s\n' % self.welcome)
         self._eof = False
         while not self._eof:
@@ -98,7 +100,7 @@ class ExecutionContext(object):
             if not command:
                 continue
             self.execute_string(command)
-        if interactive and self.goodbye:
+        if self.interactive and self.goodbye:
             sys.stdout.write('%s\n' % self.goodbye)
 
     def execute_string(self, command):
@@ -142,13 +144,12 @@ class ExecutionContext(object):
         return that input."""
         command = ''
         prompt = self.settings['cli:ps1']
-        interactive = sys.stdin.isatty() and sys.stdout.isatty()
         while True:
             try:
-                if interactive:
+                if self.interactive:
                     line = self.terminal.readline(prompt)
                 else:
-                    line = sys.stdin.readline()
+                    line = self.cmdin.readline()
             except EOFError:
                 self._eof = True
                 sys.stdout.write('\n')
