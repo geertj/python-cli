@@ -51,12 +51,14 @@ def main():
 
     if opts.filter:
         try:
-            sys.stdin = file(opts.filter)
+            cmdin = file(opts.filter)
         except IOError, e:
             sys.stderr.write('error: %s\n' % e.strerror)
             sys.exit(1)
+    else:
+        cmdin = sys.stdin
 
-    context = create(TestContext)
+    context = create(TestContext, cmdin)
     context.settings['cli:debug'] = opts.debug
     context.settings['cli:verbosity'] = opts.verbosity
 
