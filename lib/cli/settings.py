@@ -8,7 +8,6 @@
 
 import os
 import re
-import textwrap
 
 from fnmatch import fnmatch
 from ConfigParser import ConfigParser
@@ -55,41 +54,28 @@ def boolean(value):
 class Settings(dict):
     """Base class for settings."""
 
-    name = 'cli'
-    validators = [
-        ('ps1', str),
-        ('ps2', str),
-        ('debug', boolean)
+    settings = [
+        ('cli:ps1', str, '$ '),
+        ('cli:ps2', str, '> '),
+        ('cli:debug', boolean, False),
+        ('cli:verbosity', int, 0)
     ]
-    defaults = {
-        'ps1': '$ ',
-        'ps2': '> ',
-        'debug': False
-    }
-    example = textwrap.dedent("""
-        [main]
-        #ps1 = %(ps1)s
-        #ps2 = %(ps2)s
-        #debug = %(debug)s
-        """) % defaults
 
-    def __init__(self, ignore_unknown=False, **kwargs):
+    def __init__(self, name):
         """Constructor."""
+        self.name = name
         self.callbacks = []
-        self.ignore_unknown = ignore_unknown
-        self.update(self.defaults)
-        if kwargs:
-            self.update(kwargs)
+        self.update(self.get_defaults())
 
     def __setitem__(self, key, value):
         """Validate a variable. Also calls callbacks."""
         found = False
-        for pattern,validator in self.validators:
+        for pattern,validator,default in self.settings:
             if not fnmatch(key, pattern):
                 continue
             value = validator(value)
             found = True
-        if not found and not self.ignore_unknown:
+        if not found:
             raise KeyError, 'unknown setting: %s' % key
         for pattern,callback in self.callbacks:
             if not fnmatch(key, pattern):
@@ -97,35 +83,55 @@ class Settings(dict):
             callback(key, value)
         super(Settings, self).__setitem__(key, value)
 
+    def get_defaults(self):
+        """Return a dictionary with the default settings."""
+        return dict(((p,d) for p,t,d in self.settings
+                     if d is not None and '*' not in p))
+
     def load_config_file(self):
         """Load default values from a configuration file."""
         fname = platform.local_settings_file(self.name)
         if fname is None:
-            return
+            return False
         cp = ConfigParser()
         if not cp.read(fname):
-            return
-        if cp.has_section('main'):
-            for key,value in cp.items('main'):
-                self[key] = value
+            return False
+        for section in cp.sections():
+            for key,value in cp.items(section):
+                self['%s:%s' % (section, key)] = value
+        return True
 
-    def write_example_config_file(self):
-        """Write an example config file."""
-        if not self.example:
-            return
+    def _write_config_file(self, settings, example=False):
+        """Overwrite the configuration file with the current settings."""
         fname = platform.local_settings_file(self.name)
         if fname is None:
             return
-        if os.access(fname, os.R_OK):
-            return
-        try:
-            fout = file(fname, 'w')
-            fout.write(self.example)
-            fout.close()
-        except IOError:
-            pass
+        ftmp = '%s.%d-tmp' % (fname, os.getpid())
+        fout = file(ftmp, 'w')
+        sections = {}
+        for key in settings:
+            section, name = key.split(':')
+            if section not in sections:
+                sections[section] = {}
+            sections[section][name] = settings[key]
+        for section in sorted(sections):
+            fout.write('[%s]\n' % section)
+            for key in sorted(sections[section]):
+                if example:
+                    fout.write('#')
+                fout.write('%s = %s\n' % (key, sections[section][key]))
+        fout.close()
+        os.rename(ftmp, fname)
 
-    def add_callback(self, callback, pattern):
+    def write_config_file(self):
+        """Overwrite the config file with the current settings."""
+        self._write_config_file(self, False)
+
+    def write_example_config_file(self):
+        """Write an example config file."""
+        self._write_config_file(self.get_defaults(), True)
+
+    def add_callback(self, pattern, callback):
         """Register a callback function. The callback is called when the
         variable identified by `pattern' changes."""
         self.callbacks.append((pattern, callback))

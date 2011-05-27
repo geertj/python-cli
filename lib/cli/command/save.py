@@ -7,11 +7,22 @@
 # file "AUTHORS" for a complete overview.
 
 from cli.command.command import Command
-from cli.command.cd import CdCommand
-from cli.command.clear import ClearCommand
-from cli.command.exit import ExitCommand
-from cli.command.help import HelpCommand
-from cli.command.pwd import PwdCommand
-from cli.command.save import SaveCommand
-from cli.command.set import SetCommand
-from cli.command.status import StatusCommand
+
+
+class SaveCommand(Command):
+
+    name = 'save'
+    description = 'save configuration variables'
+    args_check = 0
+    helptext = """\
+        == Usage ==
+
+        save
+
+        == Description ==
+
+        Save the current value of all configuration settings.
+        """
+
+    def execute(self):
+        self.context.settings.write_config_file()

@@ -12,15 +12,9 @@ import sys
 def create(cls, *args, **kwargs):
     """This is our default constructor. It takes care of instantiating the
     right subclass, and configuring it in the right way."""
-    from cli.settings import Settings
     from cli.terminal import Terminal
     from optparse import OptionParser
-    if issubclass(cls, Settings):
-        obj = cls(ignore_unknown=True)
-        obj.load_config_file()
-        obj.update(**kwargs)
-        obj.ignore_unknown = False
-    elif issubclass(cls, Terminal):
+    if issubclass(cls, Terminal):
         obj = cls(sys.stdin, sys.stdout, sys.stderr, **kwargs)
     elif issubclass(cls, OptionParser):
         obj = cls(*args, **kwargs)
