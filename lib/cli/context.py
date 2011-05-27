@@ -18,7 +18,6 @@ from cli.object import create
 from cli.settings import Settings
 from cli.parser import Parser
 from cli.platform import Terminal
-from cli.command import *
 
 
 class ExecutionContext(object):
@@ -76,16 +75,7 @@ class ExecutionContext(object):
         self._logger.setLevel(level)
 
     def setup_commands(self):
-        """Register the default commands. Override in a subclass to change the
-        default list."""
-        self.add_command(SetCommand)
-        self.add_command(SaveCommand)
-        self.add_command(HelpCommand)
-        self.add_command(StatusCommand)
-        self.add_command(CdCommand)
-        self.add_command(ClearCommand)
-        self.add_command(PwdCommand)
-        self.add_command(ExitCommand)
+        """Register the default commands. Override in a subclass."""
 
     def add_command(self, command):
         """Add an additional command. `command' must implement the Command

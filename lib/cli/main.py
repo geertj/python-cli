@@ -13,9 +13,10 @@ from optparse import OptionParser
 from cli.object import create
 from cli.settings import Settings
 from cli.context import ExecutionContext
+from cli.command import *
 
 
-class TestExecutionContext(ExecutionContext):
+class TestContext(ExecutionContext):
 
     name = 'cli-test'
     welcome = textwrap.dedent("""\
@@ -23,6 +24,17 @@ class TestExecutionContext(ExecutionContext):
         Type 'exit' to exit or 'help' for help.
         """)
     goodbye = 'Goodbye!'
+
+    def setup_commands(self):
+        """Add commands."""
+        self.add_command(SetCommand)
+        self.add_command(SaveCommand)
+        self.add_command(HelpCommand)
+        self.add_command(StatusCommand)
+        self.add_command(CdCommand)
+        self.add_command(ClearCommand)
+        self.add_command(PwdCommand)
+        self.add_command(ExitCommand)
 
 
 def main():
@@ -44,7 +56,7 @@ def main():
             sys.stderr.write('error: %s\n' % e.strerror)
             sys.exit(1)
 
-    context = create(TestExecutionContext)
+    context = create(TestContext)
     context.settings['cli:debug'] = opts.debug
     context.settings['cli:verbosity'] = opts.verbosity
 
