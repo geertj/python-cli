@@ -90,6 +90,8 @@ class Parser(PLYParser):
         return t
 
     def t_error(self, t):
+        if t.value[:1] in '"\'':
+            raise EOFError
         raise ParseError
 
     t_heredoc2_error = t_error
