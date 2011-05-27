@@ -29,3 +29,23 @@ def local_settings_file(name):
     name = name.replace('-', '').replace('_', '')
     fname = os.path.join(home, '.%src' % name)
     return fname
+
+def which(cmd):
+    """Find a command `cmd' in the path."""
+    if cmd.startswith('/') and os.access(cmd, os.X_OK):
+        return cmd
+    path = os.environ.get('PATH')
+    path = path.split(os.pathsep)
+    for dir in path:
+        fname = os.path.join(dir, cmd)
+        if os.access(fname, os.X_OK):
+            return fname
+
+def get_pager():
+    """Return the platform specific pager."""
+    pager = os.environ.get('PAGER')
+    if pager is None and which('less'):
+        pager = 'less -FSRX'
+    if pager is None and which('more'):
+        pager = 'more'
+    return pager

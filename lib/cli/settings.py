@@ -59,6 +59,8 @@ class Settings(dict):
         ('cli:ps2', str, '> '),
         ('cli:debug', boolean, False),
         ('cli:verbosity', int, 0)
+        ('cli:autopage', boolean, True),
+        ('cli:pager', str, None)
     ]
 
     def __init__(self, name):

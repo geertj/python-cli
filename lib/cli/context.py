@@ -13,6 +13,7 @@ import traceback
 from StringIO import StringIO
 from subprocess import Popen, PIPE
 
+from cli import platform
 from cli.error import ParseError, CommandError
 from cli.object import create
 from cli.settings import Settings
@@ -181,6 +182,12 @@ class ExecutionContext(object):
             self._execute_shell_command(parsed[1])
             return
         name, args, opts, redirections, pipeline = parsed
+        if self.settings.get('cli:autopage'):
+            pager = self.settings.get('cli:pager', platform.get_pager())
+            if pipeline:
+                pipeline += '| %' % pager
+            else:
+                pipeline = pager
         command = self._create_command(name, args, opts)
         self.command = command
         self._setup_pipeline(pipeline)
