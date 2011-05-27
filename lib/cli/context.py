@@ -87,15 +87,57 @@ class ExecutionContext(object):
         else:
             self.commands.append(command)
 
-    def get_command(self, name):
-        """Return the command class for `name' or None."""
-        for cls in self.commands:
-            if cls.name == name:
-                return cls
-            if name in cls.aliases:
-                return cls
+    def execute_loop(self):
+        """Run a read/parse/execute loop until EOF."""
+        interactive = sys.stdin.isatty() and sys.stdout.isatty()
+        if interactive and self.welcome:
+            sys.stdout.write('%s\n' % self.welcome)
+        self._eof = False
+        while not self._eof:
+            command = self._read_command()
+            if not command:
+                continue
+            self.execute_string(command)
+        if interactive and self.goodbye:
+            sys.stdout.write('%s\n' % self.goodbye)
 
-    def read_command(self):
+    def execute_string(self, command):
+        """Parse and execute a string."""
+        try:
+            parsed = self.parser.parse(command)
+        except EOFError:
+            sys.stderr.write('error: incomplete command')
+            return
+        except ParseError, e:
+            self.status = self.SYNTAX_ERROR
+            sys.stderr.write('error: %s\n' % str(e))
+            return
+        for command in parsed:
+            try:
+                self._execute_command(command)
+            except Exception, e:
+                self._handle_exception(e)
+            else:
+                self.status = self.OK
+
+    def _handle_exception(self, e):
+        """Handle an exception. Can be overruled in a subclass."""
+        if isinstance(e, KeyboardInterrupt):
+            self.status = self.INTERRUPTED
+            sys.stdout.write('\n')
+        elif isinstance(e, CommandError):
+            self.status = getattr(e, 'status', self.COMMAND_ERROR)
+            sys.stderr.write('error: %s\n' % str(e))
+            if hasattr(e, 'help'):
+                sys.stderr.write('%s\n' % e.help)
+        else:
+            self.status = self.UNKNOWN_ERROR
+            if self.settings['cli:debug']:
+                sys.stderr.write(traceback.format_exc())
+            else:
+                sys.stderr.write('unknown error: %s\n' % str(e))
+
+    def _read_command(self):
         """Parse input until we can parse at least one full command, and
         return that input."""
         command = ''
@@ -132,56 +174,6 @@ class ExecutionContext(object):
                 break
         return command
 
-    def execute_loop(self):
-        """Run a read/parse/execute loop until EOF."""
-        interactive = sys.stdin.isatty() and sys.stdout.isatty()
-        if interactive and self.welcome:
-            sys.stdout.write('%s\n' % self.welcome)
-        self._eof = False
-        while not self._eof:
-            command = self.read_command()
-            if not command:
-                continue
-            self.execute_string(command)
-        if interactive and self.goodbye:
-            sys.stdout.write('%s\n' % self.goodbye)
-
-    def execute_string(self, command):
-        """Parse and execute a string."""
-        try:
-            parsed = self.parser.parse(command)
-        except EOFError:
-            sys.stderr.write('error: incomplete command')
-            return
-        except ParseError, e:
-            self.status = self.SYNTAX_ERROR
-            sys.stderr.write('error: %s\n' % str(e))
-            return
-        for command in parsed:
-            try:
-                self._execute_command(command)
-            except Exception, e:
-                self.handle_exception(e)
-            else:
-                self.status = self.OK
-
-    def handle_exception(self, e):
-        """Handle an exception. Can be overruled in a subclass."""
-        if isinstance(e, KeyboardInterrupt):
-            self.status = self.INTERRUPTED
-            sys.stdout.write('\n')
-        elif isinstance(e, CommandError):
-            self.status = getattr(e, 'status', self.COMMAND_ERROR)
-            sys.stderr.write('error: %s\n' % str(e))
-            if hasattr(e, 'help'):
-                sys.stderr.write('%s\n' % e.help)
-        else:
-            self.status = self.UNKNOWN_ERROR
-            if self.settings['cli:debug']:
-                sys.stderr.write(traceback.format_exc())
-            else:
-                sys.stderr.write('unknown error: %s\n' % str(e))
-
     def _execute_command(self, parsed):
         """INTERNAL: execute a command."""
         if parsed[0] == '!':
@@ -206,10 +198,18 @@ class ExecutionContext(object):
 
     def _create_command(self, name, args, opts):
         """INTERNAL: instantiate a new command."""
-        cls = self.get_command(name)
+        cls = self._get_command(name)
         if cls is None:
             raise CommandError, 'unknown command: %s' % name
         return cls(args, opts)
+
+    def _get_command(self, name):
+        """Return the command class for `name' or None."""
+        for cls in self.commands:
+            if cls.name == name:
+                return cls
+            if name in cls.aliases:
+                return cls
 
     def _setup_pipeline(self, pipeline):
         """INTERNAL: set up the pipeline, if any."""
