@@ -58,7 +58,7 @@ class Settings(dict):
         ('cli:ps1', str, '$ '),
         ('cli:ps2', str, '> '),
         ('cli:debug', boolean, False),
-        ('cli:verbosity', int, 0)
+        ('cli:verbosity', int, 0),
         ('cli:autopage', boolean, True),
         ('cli:pager', str, None)
     ]
