@@ -192,9 +192,11 @@ class ExecutionContext(object):
         self.command = command
         self._setup_pipeline(pipeline)
         self._setup_io_streams(redirections)
-        command.run(self)
-        self._restore_io_streams()
-        self._execute_pipeline()
+        try:
+            command.run(self)
+        finally:
+            self._restore_io_streams()
+            self._execute_pipeline()
 
     def _execute_shell_command(self, command):
         """INTERNAL: execute a shell command."""
