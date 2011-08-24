@@ -8,7 +8,7 @@
 
 import sys
 import textwrap
-from argparse import ArgumentParser, FileType
+from optparse import OptionParser
 
 from cli.object import create
 from cli.settings import Settings
@@ -39,25 +39,33 @@ class TestContext(ExecutionContext):
 
 def main():
     """Test driver for python-cli."""
-    parser = create(ArgumentParser)
-    parser.add_argument('-f', '--file', type=FileType('r'), default=sys.stdin,
-                        help='execute commands from FILE')
-    parser.add_argument('-d', '--debug', action='store_true', default=False,
-                        help='enable debugging mode')
-    parser.add_argument('-v', '--verbose', action='store_const',
-                        dest='verbosity', default=0, const=10,
-                        help='be verbose')
-    parser.add_argument('command', nargs='*')
-    args = parser.parse_args()
+    parser = create(OptionParser)
+    parser.add_option('-f', '--filter', metavar='FILE',
+                      help='execute commands from FILE')
+    parser.add_option('-d', '--debug', action='store_true',
+                      default=False, help='enable debugging mode')
+    parser.add_option('-v', '--verbose', action='store_const',
+                      dest='verbosity', default=0, const=10,
+                      help='be verbose',)
+    opts, args = parser.parse_args()
 
-    context = create(TestContext, args.file)
-    context.settings['cli:debug'] = args.debug
-    context.settings['cli:verbosity'] = args.verbosity
-
-    if args.command:
-        command = ' '.join(args.command) + '\n'
-        context.execute_string(command)
+    if opts.filter:
+        try:
+            cmdin = file(opts.filter)
+        except IOError, e:
+            sys.stderr.write('error: %s\n' % e.strerror)
+            sys.exit(1)
     else:
+        cmdin = sys.stdin
+
+    context = create(TestContext, cmdin)
+    context.settings['cli:debug'] = opts.debug
+    context.settings['cli:verbosity'] = opts.verbosity
+
+    if len(args) == 0:
         context.execute_loop()
+    else:
+        command = ' '.join(args) + '\n'
+        context.execute_string(command)
 
     sys.exit(context.status)
