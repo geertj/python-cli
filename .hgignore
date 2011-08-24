@@ -7,3 +7,5 @@ dist/
 .*.swo
 header
 *~
+*_lex.py
+*_tab.py
