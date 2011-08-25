@@ -58,7 +58,7 @@ class mybdist_egg(bdist_egg):
 
 version_info = {
     'name': 'python-cli',
-    'version': '1.1',
+    'version': '1.2',
     'description': 'A toolkit for CLI construction',
     'author': 'Geert Jansen',
     'author_email': 'gjansen@redhat.com',
