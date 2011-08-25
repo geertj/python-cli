@@ -60,15 +60,16 @@ class ExecutionContext(object):
         formatter = logging.Formatter('%(levelname)s: %(message)s')
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.INFO)
         self._logger = logger
 
     def _load_settings(self):
         """Load settings."""
-        self.settings.add_callback('cli:debug', self._set_debug)
         found = self.settings.load_config_file()
         if not found:
             self.settings.write_example_config_file()
+        self.settings.add_callback('cli:debug', self._set_debug)
+        self._set_debug('cli:debug', self.settings['cli:debug'])
 
     def _set_debug(self, key, value):
         """Enable or disable debugging (callback)."""
