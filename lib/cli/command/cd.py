@@ -32,5 +32,5 @@ class CdCommand(Command):
         dirname = self.arguments[0]
         try:
             os.chdir(dirname)
-        except OSError, e:
+        except OSError as e:
             self.error('%s: %s' % (dirname, e.strerror))

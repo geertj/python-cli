@@ -231,4 +231,4 @@ class Parser(PLYParser):
     def p_error(self, p):
         if p is None:
             raise EOFError
-        raise ParseError, 'syntax error'
+        raise ParseError('syntax error')

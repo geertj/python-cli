@@ -99,7 +99,7 @@ class Command(object):
         if cls is None:
             cls = CommandError
         elif not issubclass(cls, CommandError):
-            raise TypeError, 'Expecting a CommandError subclass'
+            raise TypeError('Expecting a CommandError subclass')
         raise cls(message, **kwargs)
 
     def format_list(self, lst, bullet='*', indent=0):

@@ -112,14 +112,14 @@ class ExecutionContext(object):
         except EOFError:
             sys.stderr.write('error: incomplete command')
             return
-        except ParseError, e:
+        except ParseError as e:
             self.status = self.SYNTAX_ERROR
             sys.stderr.write('error: %s\n' % str(e))
             return
         for command in parsed:
             try:
                 self._execute_command(command)
-            except Exception, e:
+            except Exception as e:
                 self._handle_exception(e)
             else:
                 self.status = self.OK
@@ -169,7 +169,7 @@ class ExecutionContext(object):
             except EOFError:
                 prompt = self.settings['cli:ps2']
                 continue
-            except ParseError, e:
+            except ParseError as e:
                 self.status = self.SYNTAX_ERROR
                 sys.stderr.write('error: %s\n' % str(e))
                 return
@@ -211,7 +211,7 @@ class ExecutionContext(object):
         """INTERNAL: instantiate a new command."""
         cls = self._get_command(name)
         if cls is None:
-            raise CommandError, 'unknown command: %s' % name
+            raise CommandError('unknown command: %s' % name)
         return cls(args, opts)
 
     def _get_command(self, name):
@@ -257,4 +257,4 @@ class ExecutionContext(object):
         dummy, stderr = self._pipeline.communicate(pipeinput)
         retcode = self._pipeline.returncode
         if retcode != 0:
-            raise CommandError, stderr.rstrip()
+            raise CommandError(stderr.rstrip())

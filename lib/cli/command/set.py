@@ -44,5 +44,5 @@ class SetCommand(Command):
             key, value = args
             try:
                 settings[key] = value
-            except (KeyError, ValueError), e:
+            except (KeyError, ValueError) as e:
                 self.error(e.message)
