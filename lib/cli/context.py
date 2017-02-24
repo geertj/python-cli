@@ -10,7 +10,11 @@ import sys
 import logging
 import traceback
 
-from StringIO import StringIO
+try:                    # Python 2
+    from StringIO import StringIO
+except ImportError:     # Python 3
+    from io import StringIO
+
 from subprocess import Popen, PIPE
 
 from cli import platform
@@ -85,7 +89,7 @@ class ExecutionContext(object):
     def add_command(self, command):
         """Add an additional command. `command' must implement the Command
         interface."""
-        for i in range(len(self.commands)):
+        for i in list(range(len(self.commands))):
             if self.commands[i].name == command.name:
                 self.commands[i] = command
                 break
@@ -112,14 +116,14 @@ class ExecutionContext(object):
         except EOFError:
             sys.stderr.write('error: incomplete command')
             return
-        except ParseError, e:
+        except ParseError as e:
             self.status = self.SYNTAX_ERROR
             sys.stderr.write('error: %s\n' % str(e))
             return
         for command in parsed:
             try:
                 self._execute_command(command)
-            except Exception, e:
+            except Exception as e:
                 self._handle_exception(e)
             else:
                 self.status = self.OK
@@ -169,7 +173,7 @@ class ExecutionContext(object):
             except EOFError:
                 prompt = self.settings['cli:ps2']
                 continue
-            except ParseError, e:
+            except ParseError as e:
                 self.status = self.SYNTAX_ERROR
                 sys.stderr.write('error: %s\n' % str(e))
                 return
@@ -186,7 +190,7 @@ class ExecutionContext(object):
         if self.settings.get('cli:autopage'):
             pager = self.settings.get('cli:pager', platform.get_pager())
             if pipeline:
-                pipeline += '| %' % pager
+                pipeline += '| %s' % pager
             else:
                 pipeline = pager
         command = self._create_command(name, args, opts)
@@ -211,7 +215,7 @@ class ExecutionContext(object):
         """INTERNAL: instantiate a new command."""
         cls = self._get_command(name)
         if cls is None:
-            raise CommandError, 'unknown command: %s' % name
+            raise CommandError('unknown command: %s' % name)
         return cls(args, opts)
 
     def _get_command(self, name):
@@ -235,13 +239,13 @@ class ExecutionContext(object):
         """INTERNAL: set up standard input/output/error."""
         for type, arg in redirections:
             if type == '<':
-                self.terminal.stdin = file(arg)
+                self.terminal.stdin = open(arg)
             elif type == '<<':
                 self.terminal.stdin = StringIO(arg)
             elif type == '>':
-                self.terminal.stdout = file(arg, 'w')
+                self.terminal.stdout = open(arg, 'w')
             elif type == '>>':
-                self.terminal.stdout = file(arg, 'a')
+                self.terminal.stdout = open(arg, 'a')
 
     def _restore_io_streams(self):
         """INTERNAL: reset IO streams."""
@@ -257,4 +261,4 @@ class ExecutionContext(object):
         dummy, stderr = self._pipeline.communicate(pipeinput)
         retcode = self._pipeline.returncode
         if retcode != 0:
-            raise CommandError, stderr.rstrip()
+            raise CommandError(stderr.rstrip())

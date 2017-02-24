@@ -106,6 +106,6 @@ class HelpCommand(Command):
             name = args[0]
             args = args[1:]
             opts = [('--help', None)]
-            opts += self.options.items()
+            opts += list(self.options.items())
             command = self.context._create_command(name, args, opts)
             command.run(self.context)

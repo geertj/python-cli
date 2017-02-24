@@ -51,8 +51,8 @@ def main():
 
     if opts.filter:
         try:
-            cmdin = file(opts.filter)
-        except IOError, e:
+            cmdin = open(opts.filter)
+        except IOError as e:
             sys.stderr.write('error: %s\n' % e.strerror)
             sys.exit(1)
     else:

@@ -34,7 +34,7 @@ class SetCommand(Command):
         settings = self.context.settings
         stdout = self.context.terminal.stdout
         if len(args) == 0:
-            names = settings.keys()
+            names = list(settings.keys())
             names.sort()
             stdout.write('Current settings:\n\n')
             for name in names:
@@ -44,5 +44,5 @@ class SetCommand(Command):
             key, value = args
             try:
                 settings[key] = value
-            except (KeyError, ValueError), e:
+            except (KeyError, ValueError) as e:
                 self.error(e.message)

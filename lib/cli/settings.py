@@ -10,7 +10,12 @@ import os
 import re
 
 from fnmatch import fnmatch
-from ConfigParser import ConfigParser
+
+try:                    # Python 2
+    from ConfigParser import ConfigParser
+except ImportError:     # Python 3
+    from configparser import ConfigParser
+
 from cli import platform
 
 
@@ -22,7 +27,7 @@ class enum(object):
 
     def __call__(self, value):
         if value not in self.values:
-            raise ValueError, 'illegal value: %s' % value
+            raise ValueError('illegal value: %s' % value)
         return value
 
 
@@ -34,7 +39,7 @@ class regex(object):
 
     def __call__(self, value):
         if not self.regex.match(value):
-            raise ValueError, 'illegal value: %s' % value
+            raise ValueError('illegal value: %s' % value)
         return value
 
 
@@ -48,7 +53,7 @@ def boolean(value):
             return True
         elif s in ('false', 'off', '0'):
             return False
-    raise ValueError, 'illegal value: %s' % value
+    raise ValueError('illegal value: %s' % value)
 
 
 class Settings(dict):
@@ -78,7 +83,7 @@ class Settings(dict):
             value = validator(value)
             found = True
         if not found:
-            raise KeyError, 'unknown setting: %s' % key
+            raise KeyError('unknown setting: %s' % key)
         for pattern,callback in self.callbacks:
             if not fnmatch(key, pattern):
                 continue
@@ -109,7 +114,7 @@ class Settings(dict):
         if fname is None:
             return
         ftmp = '%s.%d-tmp' % (fname, os.getpid())
-        fout = file(ftmp, 'w')
+        fout = open(ftmp, 'w')
         sections = {}
         for key in settings:
             section, name = key.split(':')
