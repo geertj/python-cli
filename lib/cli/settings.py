@@ -10,7 +10,12 @@ import os
 import re
 
 from fnmatch import fnmatch
-from ConfigParser import ConfigParser
+
+try:                    # Python 2
+    from ConfigParser import ConfigParser
+except ImportError:     # Python 3
+    from configparser import ConfigParser
+
 from cli import platform
 
 
@@ -109,7 +114,7 @@ class Settings(dict):
         if fname is None:
             return
         ftmp = '%s.%d-tmp' % (fname, os.getpid())
-        fout = file(ftmp, 'w')
+        fout = open(ftmp, 'w')
         sections = {}
         for key in settings:
             section, name = key.split(':')

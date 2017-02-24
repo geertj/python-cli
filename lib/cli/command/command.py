@@ -117,7 +117,7 @@ class Command(object):
 
     def _indent_level(self, s):
         """INTERNAL: return the indentation level of a string."""
-        for i in range(len(s)):
+        for i in list(range(len(s))):
             if not s[i].isspace():
                 return i
         return len(s)
@@ -128,7 +128,7 @@ class Command(object):
         if not lines:
             return ''
         indent = self._indent_level(lines[0])
-        for ix in range(len(lines)):
+        for ix in list(range(len(lines))):
             line = lines[ix][indent:]
             if line.startswith('==') and line.endswith('=='):
                 line = line[2:-2].strip().upper()

@@ -54,6 +54,9 @@ class PosixTerminal(Terminal):
         os.close(self._tty)
 
     def readline(self, prompt):
-        line = raw_input(prompt)
+        try:        # Python 2
+            line = raw_input(prompt)
+        except:     # Python 3
+            line = input(prompt)
         line += '\n'
         return line

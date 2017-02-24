@@ -115,7 +115,7 @@ class Parser(PLYParser):
         """
         if len(p) == 8:
             if p[6]:
-                for i in range(len(p[4])):
+                for i in list(range(len(p[4]))):
                     if p[4][i][0] == '<<':
                         p[4][i] = ('<<', p[6])
                         break

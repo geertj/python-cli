@@ -10,7 +10,11 @@ import sys
 import logging
 import traceback
 
-from StringIO import StringIO
+try:                    # Python 2
+    from StringIO import StringIO
+except ImportError:     # Python 3
+    from io import StringIO
+
 from subprocess import Popen, PIPE
 
 from cli import platform
@@ -85,7 +89,7 @@ class ExecutionContext(object):
     def add_command(self, command):
         """Add an additional command. `command' must implement the Command
         interface."""
-        for i in range(len(self.commands)):
+        for i in list(range(len(self.commands))):
             if self.commands[i].name == command.name:
                 self.commands[i] = command
                 break
@@ -235,13 +239,13 @@ class ExecutionContext(object):
         """INTERNAL: set up standard input/output/error."""
         for type, arg in redirections:
             if type == '<':
-                self.terminal.stdin = file(arg)
+                self.terminal.stdin = open(arg)
             elif type == '<<':
                 self.terminal.stdin = StringIO(arg)
             elif type == '>':
-                self.terminal.stdout = file(arg, 'w')
+                self.terminal.stdout = open(arg, 'w')
             elif type == '>>':
-                self.terminal.stdout = file(arg, 'a')
+                self.terminal.stdout = open(arg, 'a')
 
     def _restore_io_streams(self):
         """INTERNAL: reset IO streams."""
