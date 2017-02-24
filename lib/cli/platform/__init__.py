@@ -8,7 +8,7 @@
 
 import sys
 
-if sys.platform in ('linux2',):
+if sys.platform.startswith('linux'):
     from cli.platform.posix.terminal import PosixTerminal as Terminal
     from cli.platform.posix.util import *
 

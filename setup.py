@@ -78,8 +78,8 @@ version_info = {
 setup(
     package_dir = { '': 'lib' },
     packages = [ 'cli', 'cli.command', 'cli.platform', 'cli.platform.posix' ],
-    setup_requires = [ 'ply >= 3.3' ],
-    install_requires = [ 'ply >= 3.3' ],
+    setup_requires = [ 'ply >= 3.8' ],
+    install_requires = [ 'ply >= 3.8' ],
     entry_points = { 'console_scripts': [ 'cli-test = cli.main:main' ] },
     cmdclass = { 'build': mybuild, 'bdist_egg': mybdist_egg, 'gentab': gentab },
     use_2to3 = True,
